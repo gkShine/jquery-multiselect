@@ -14,6 +14,7 @@
 
     $.extend($.fn.multiSelect, {
         defaults: {
+            selection: 'body', //区域选择
             actcls: 'active', //选中样式
             selector: 'tbody tr', //选择的行元素
             except: ['tbody'], //选中后不去除多选效果的元素队列
@@ -22,10 +23,12 @@
         },
         first: null, //按shift时，用于记住第一个点击的item
         last: null, //最后点击的item
+        isSelection: false,
         init: function (scope, options) {
             this.scope = scope;
             this.options = $.extend({}, this.defaults, options);
             this.initEvent();
+            this.initScopeEvent();
         },
         checkStatics: function (dom) {
             for (var i in this.options.statics) {
@@ -80,6 +83,10 @@
              * 点击其他处去除选中状态
              */
             $(document).on('click.mSelect', function (e) {
+                if (self.isSelection) {
+                    self.isSelection = false;
+                    return;
+                }
                 for (var i in options.except) {
                     var except = options.except[i];
                     if ($(e.target).is(except) || $(e.target).parents(except).size()) {
@@ -118,6 +125,84 @@
                     self.first = null;
                 }
             });
+        },
+        initScopeEvent: function () {
+            var self = this,
+                scope = self.scope,
+                options = self.options,
+                callback = options.callback,
+                actcls = options.actcls;
+            if (!options.selection) {
+                return;
+            }
+            var selection_scope = $(options.selection).css('user-select', 'none');
+            var selection = $('<div/>').css({
+                border: '1px dashed blue',
+                position: 'absolute'
+            }).appendTo('body');
+            var startX = 0, startY = 0, flag = false;
+            selection_scope.on('mousedown.mSelect', function () {
+                var evt = window.event || e;
+                startX = evt.clientX + $(document).scrollLeft();
+                startY = evt.clientY + $(document).scrollTop();
+                flag = true;
+            }).on('mousemove.mSelect', function (e) {
+                if (flag) {
+                    var evt = window.event || e;
+                    var scrollTop = $(document).scrollTop();
+                    var scrollLeft = $(document).scrollLeft();
+                    retcHeight = Math.abs(startY - evt.clientY - scrollTop);
+                    retcWidth = Math.abs(startX - evt.clientX - scrollLeft);
+                    if (retcHeight + retcWidth > 1) {
+                        retcLeft = (startX - evt.clientX - scrollLeft > 0 ? evt.clientX + scrollLeft : startX);
+                        retcTop = (startY - evt.clientY - scrollTop > 0 ? evt.clientY + scrollTop : startY);
+                        selection.show().css({
+                            left: retcLeft,
+                            top: retcTop,
+                            width: retcWidth,
+                            height: retcHeight
+                        });
+                        clearTimeout(timerId);
+                        self.isSelection = true;
+                        var timerId = setTimeout(function(){
+                            setectItem(retcLeft, retcTop, retcWidth, retcHeight);
+                        }, 200);
+                    }
+                }
+            });
+            $(document).on('mouseup.mSelect', function (e) {
+                selection.hide();
+                flag = false;
+                self.isSelection && $.isFunction(callback) && callback($(options.selector + '.' + actcls, scope));
+            });
+
+            var checkScope = function (retcWidth, retcHeight, retcLeft, retcTop, dom) {
+                var offset = dom.offset();
+                var maxLeft = offset.left + dom.outerWidth();
+                var maxTop = offset.top + dom.outerHeight();
+                for (var x = 0; x <= retcWidth; x++) {
+                    for (var y = 0; y <= retcHeight; y++) {
+                        var inX = (retcLeft + x) > offset.left && (retcLeft + x) < maxLeft;
+                        var inY = (retcTop + y) > offset.top && (retcTop + y) < maxTop;
+                        if (inX && inY) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            };
+            //计算选中范围
+            var setectItem = function (retcLeft, retcTop, retcWidth, retcHeight) {
+                $(options.selector, self.scopp).each(function () {
+                    if (checkScope(retcWidth, retcHeight, retcLeft, retcTop, $(this))) {
+                        if (!self.checkStatics($(this))) {
+                            $(this).addClass(actcls);
+                        }
+                    } else {
+                        $(this).removeClass(actcls);
+                    }
+                });
+            };
         }
     });
 })(jQuery);
