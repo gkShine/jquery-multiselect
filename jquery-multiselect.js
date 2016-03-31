@@ -162,7 +162,11 @@
                             width: retcWidth,
                             height: retcHeight
                         });
-                        setectItem(retcLeft, retcTop, retcWidth, retcHeight);
+                        clearTimeout(timerId);
+                        self.isSelection = true;
+                        var timerId = setTimeout(function(){
+                            setectItem(retcLeft, retcTop, retcWidth, retcHeight);
+                        }, 200);
                     }
                 }
             });
@@ -172,28 +176,25 @@
                 self.isSelection && $.isFunction(callback) && callback($(options.selector + '.' + actcls, scope));
             });
 
-            var checkScope = function (){
-
+            var checkScope = function (retcWidth, retcHeight, retcLeft, retcTop, dom) {
+                var offset = dom.offset();
+                var maxLeft = offset.left + dom.outerWidth();
+                var maxTop = offset.top + dom.outerHeight();
+                for (var x = 0; x <= retcWidth; x++) {
+                    for (var y = 0; y <= retcHeight; y++) {
+                        var inX = (retcLeft + x) > offset.left && (retcLeft + x) < maxLeft;
+                        var inY = (retcTop + y) > offset.top && (retcTop + y) < maxTop;
+                        if (inX && inY) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
             };
             //计算选中范围
             var setectItem = function (retcLeft, retcTop, retcWidth, retcHeight) {
-                self.isSelection = true;
                 $(options.selector, self.scopp).each(function () {
-                    var offset = $(this).offset();
-                    var maxLeft = offset.left + $(this).outerWidth();
-                    var maxTop = offset.top + $(this).outerHeight();
-                    var inScope = false;
-                    for (var x = 0; x <= retcWidth; x++) {
-                        for (var y = 0; y <= retcHeight; y++) {
-                            var inX = (retcLeft + x) > offset.left && (retcLeft + x) < maxLeft;
-                            var inY = (retcTop + y) > offset.top && (retcTop + y) < maxTop;
-                            if (inX && inY) {
-                                inScope = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (inScope) {
+                    if (checkScope(retcWidth, retcHeight, retcLeft, retcTop, $(this))) {
                         if (!self.checkStatics($(this))) {
                             $(this).addClass(actcls);
                         }
