@@ -173,7 +173,11 @@
             $(document).on('mouseup.mSelect', function (e) {
                 selection.hide();
                 flag = false;
-                self.isSelection && $.isFunction(callback) && callback($(options.selector + '.' + actcls, scope));
+                if(self.isSelection){
+                    setTimeout(function(){
+                        $.isFunction(callback) && callback($(options.selector + '.' + actcls, scope));
+                    }, 200);
+                }
             });
 
             var checkScope = function (retcWidth, retcHeight, retcLeft, retcTop, dom) {
