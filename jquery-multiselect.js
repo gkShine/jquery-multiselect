@@ -141,7 +141,7 @@
                 position: 'absolute'
             }).appendTo('body');
             var startX = 0, startY = 0, flag = false;
-            selection_scope.on('mousedown.mSelect', function () {
+            selection_scope.on('mousedown.mSelect', function (e) {
                 var evt = window.event || e;
                 startX = evt.clientX + $(document).scrollLeft();
                 startY = evt.clientY + $(document).scrollTop();
