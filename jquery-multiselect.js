@@ -84,7 +84,6 @@
              */
             $(document).on('click.mSelect', function (e) {
                 if (self.isSelection) {
-                    self.isSelection = false;
                     return;
                 }
                 for (var i in options.except) {
@@ -176,18 +175,24 @@
                 if(self.isSelection){
                     setTimeout(function(){
                         $.isFunction(callback) && callback($(options.selector + '.' + actcls, scope));
+                        self.isSelection = false;
                     }, 200);
                 }
             });
 
             var checkScope = function (retcWidth, retcHeight, retcLeft, retcTop, dom) {
-                var offset = dom.offset();
-                var maxLeft = offset.left + dom.outerWidth();
-                var maxTop = offset.top + dom.outerHeight();
+                var offset = dom.offset(),
+                    maxLeft = offset.left + dom.outerWidth(),
+                    maxTop = offset.top + dom.outerHeight(),
+                    left = offset.left - retcLeft,
+                    right = maxLeft - retcLeft,
+                    top = offset.top - retcTop,
+                    buttom = maxTop - retcTop;
+
                 for (var x = 0; x <= retcWidth; x++) {
                     for (var y = 0; y <= retcHeight; y++) {
-                        var inX = (retcLeft + x) > offset.left && (retcLeft + x) < maxLeft;
-                        var inY = (retcTop + y) > offset.top && (retcTop + y) < maxTop;
+                        var inX = x > left && x < right;
+                        var inY = y > top && y < buttom;
                         if (inX && inY) {
                             return true;
                         }
