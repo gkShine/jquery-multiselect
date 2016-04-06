@@ -1,7 +1,7 @@
 {
     "name": "jquery multiselect",
     "main": "multiselect.js",
-    "version": "1.0",
+    "version": "2.1",
     "authors": [
         "林盛 <linren_888@126.com>"
     ],
