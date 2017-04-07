@@ -88,7 +88,7 @@
                 }
                 for (var i in options.except) {
                     var except = options.except[i];
-                    if ($(e.target).is(except) || $(e.target).parents(except).size()) {
+                    if ($(e.target).is(except) || $(e.target).parents(except).length) {
                         return;
                     }
                 }
